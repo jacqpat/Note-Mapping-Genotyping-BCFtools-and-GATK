@@ -13,10 +13,22 @@ We need **GATK** to do so.
 
 `gatk CreateSequenceDictionary -R our-reference.fa -O our-reference.dict`
 
+Githubs of our tools:
+- BCFtools: https://github.com/samtools/bcftools?tab=readme-ov-file
+- Samtools:
+- BWA: https://github.com/lh3/bwa
+- 
+
+## (Optional) Seqkit
+Before aligning your sequences, it's good practice to remove reads that are too short to be really useful.
+It's a way to avoid issue such as chimera: contigs assembled from reads that actually come from widely different places in the genome.
+
+`seqtk seq -L 25 one-of-our-samples.fastq.gz | one-of-our-samples.fastq`
+
 ## BWAmem
 To align modern samples, we use BWAmem and Samtools. Samtools index expect a file as parameter, not a piped input.
 So for ease of use, let us simply create intermediary files (do not forget to delete them if they're still up).
 
-`bwa mem our-reference.fa one-of-our-samples.fastq.gz | samtools view -b | samtools sorted -o `
+`bwa mem -t 4 our-reference.fa one-of-our-samples.fastq.gz | samtools view -b | samtools sort -o one-of-our-samples.mapped.sorted.bam && samtools index one-of-our-samples.mapped.sorted.bam`
 
-
+With -t 4 the number of threads. To be adapted.
