@@ -38,6 +38,7 @@ nextflow run nf-core/eager --input '${path_to_file}/${name_of_file}' \
 # remove "fasta_index" and "seq_dict" if no index and dict of seq.
 # add "bwa_index" if you have one (ex: if you've already run EAGER)
 # "resume" is an option to use if there was an error and you want to restart where you were.
+# "profile" give configuration presets for different compute environments. Here: the genotoul. See documentation for more info.
 #
 # to keep discarded unmapped reads for later, do:
 # --run_bam_filtering
