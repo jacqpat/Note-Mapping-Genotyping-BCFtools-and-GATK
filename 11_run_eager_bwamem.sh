@@ -39,6 +39,8 @@ nextflow run nf-core/eager --input '${path_to_file}/${name_of_file}' \
 # add "bwa_index" if you have one (ex: if you've already run EAGER)
 # "resume" is an option to use if there was an error and you want to restart where you were.
 # "profile" give configuration presets for different compute environments. Here: the genotoul. See documentation for more info.
+# We skipped fastqc, adapterremoval, and preseq because we had already done those steps beforehand with less generic parameters.
+# "clip_readlength" mean getting rid of all reads smaller than threshold. Here: 25 bp, which is for aDNA. Change accordingly.
 #
 # to keep discarded unmapped reads for later, do:
 # --run_bam_filtering
