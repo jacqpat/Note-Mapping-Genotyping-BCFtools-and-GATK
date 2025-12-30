@@ -2,4 +2,4 @@
 
 vcf=""
 out=""
-bcftools filter -i 'QUAL >= 30 && DP >= 5' $vcf -Oz -o $out
+bcftools view --types snps -m 2 -M 2 $vcf -Ou | bcftools filter -i 'QUAL >= 30 && DP >= 5' -Oz -o $out
