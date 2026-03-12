@@ -97,15 +97,16 @@ def run_dunn_test(ho_df):
         return None
 
 ### MAIN ###
-dunn_save=r"c:\Users\pajacques\Documents\2025-07-09_moderne_mapping\AL_Salar_DART_WGS\Dunn_merged_intersect_salmo_salar_DART_WGS_bisnps_Q30-0_DP5-0.csv"
-hohe_save=r"c:\Users\pajacques\Documents\2025-07-09_moderne_mapping\AL_Salar_DART_WGS\Ho_He_Fis_merged_intersect_salmo_salar_DART_WGS_bisnps_Q30-0_DP5-0.csv"
-fst_save = r"c:\Users\pajacques\Documents\2025-07-09_moderne_mapping\AL_Salar_DART_WGS\Fst_merged_intersect_salmo_salar_DART_WGS_bisnps_Q30-0_DP5-0.csv"
-boxx_save=r"c:\Users\pajacques\Documents\2025-07-09_moderne_mapping\AL_Salar_DART_WGS\Boxplot_merged_intersect_salmo_salar_DART_WGS_bisnps_Q30-0_DP5-0.png"
+inds_save=r"" # .csv
+stat_save=r"" # .csv
+dunn_save=r"" # .csv
+hohe_save=r"" # .csv
+boxx_save=r"" # .svg
 print("Read VCF")
-callset = allel.read_vcf(r"c:\Users\pajacques\Documents\2025-07-09_moderne_mapping\AL_Salar_DART_WGS\merged_intersect_salmo_salar_DART_WGS_ancient_bisnps_Q30-0_DP5-0.vcf.gz")
+callset = allel.read_vcf(r"") # .vcf.gz or an uncompressed .vcf
 genotypes = allel.GenotypeArray(callset['calldata/GT'])
 print("Filter VCF")
-#genotypes = filter_by_maf(genotypes, min_maf=0.05)
+#genotypes = filter_by_maf(genotypes, min_maf=0.05) # turn into a comment if you don't want to apply MAF filtering
 smpl = callset['samples']
 genotypes, smpl, kept_indices = filter_samples_with_min_snps(genotypes, smpl, min_snps=3) # Remove samples with < 3 SNPs
 print("Read POP")
@@ -137,20 +138,33 @@ pop_df, ind_df = unified_ho_he_fis_per_pop(genotypes, subpops, populations)
 # Phase 1.b: population level summaries
 print(pop_df)
 pop_df.to_csv(hohe_save, index=False)
-# phase 2: Dunn test
+ind_df.to_csv(inds_save, index=False)
+# phase 2.a: Dunn test
 dunn_results = run_dunn_test(ind_df)
 if dunn_results is not None:
     print("\nDunn test pairwise p-values:")
     print(dunn_results)
     dunn_results.to_csv(dunn_save)
+# phase 2.b: Statistics
+stats_df = (
+    ind_df
+    .groupby("Population")["Ho"]
+    .agg(["count","mean","var","std"])
+    .reset_index()
+)
+print(stats_df)
+stats_df.to_csv(stat_save, index=False)
+# phase 3: Visualisation
 order = []
-ind_df["Population"] = pd.Categorical(ind_df["Population"], ordered=True) #categories = order
+ind_df["Population"] = pd.Categorical(ind_df["Population"], ordered=True)
+mpl.rcParams['svg.fonttype'] = 'none'
 plt.figure(figsize=(8, 8))
-sns.boxplot(data=ind_df, x="Population", y="Ho", hue="Population",palette="Set2", showfliers = False, legend=False, dodge=False)
-sns.stripplot(data=ind_df, x="Population", y="Ho", color="black", alpha=0.6, jitter=True)
+sns.boxplot(data = ind_df, x = "Population", y = "Ho", hue = "Population",palette = "Set2", showfliers = False, legend=False, dodge=False)
+sns.stripplot(data = ind_df, x = "Population", y = "Ho", color = "black", alpha=0.6, jitter=True)
+plt.ylim(0, ind_df["Ho"].max() * 1.05)  # ← ensures consistent Y‑axis
 plt.ylabel("Observed Heterozygosity (Ho)")
-plt.xlabel("Population")
+plt.xlabel("")
 plt.xticks(rotation=90)
 plt.tight_layout()
-plt.savefig(boxx_save)
+plt.savefig(boxx_save, format="svg", transparent=True, bbox_inches="tight")
 plt.show()
